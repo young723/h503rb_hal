@@ -6,7 +6,7 @@
 //#define MAESTRO_0
 
 #define MAESTRO_RECOVER
-//#define MAESTRO_DIS_IO_AUTO
+//#define MAESTRO_KXKY
 
 #define MAESTRO_OK			1
 #define MAESTRO_FAIL		0
@@ -107,10 +107,6 @@
 #define MAESTRO_OSR2_4					2
 #define MAESTRO_OSR2_8					3
 #define MAESTRO_OSR2_16					4		// 4~7	maestro0
-
-//ZDBL_ENB	0: OSR1_Z=2*OSR_XY   1:OSR1_Z=OSR_XY
-#define MAESTRO_ZDBL_ENB_ON				1
-#define MAESTRO_ZDBL_ENB_OFF			0
 
 #define MAESTRO_STATUS_DRDY				0x01
 #define MAESTRO_STATUS_OVFL				0x02

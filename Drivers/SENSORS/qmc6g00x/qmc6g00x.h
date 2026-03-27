@@ -14,7 +14,7 @@
 #define QMC6G00V_CHIP_ID				0x10
 #define QMC6G00H_CHIP_ID				0x20
 /*data output register*/
-#define QMC6G00X_CHIP_ID_REG				0x00
+#define QMC6G00X_CHIP_ID_REG			0x00
 #define QMC6G00X_DATA_OUT_X_LSB_REG		0x01
 #define QMC6G00X_DATA_OUT_X_MSB_REG		0x02
 #define QMC6G00X_DATA_OUT_Y_LSB_REG		0x03
@@ -193,6 +193,7 @@ typedef struct
 {
 	unsigned char			protocol;
 	unsigned char			slave_addr;
+	unsigned char			chipid;
 	unsigned short			ssvt;
 	short					last_data[3];
 

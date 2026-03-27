@@ -2653,8 +2653,8 @@ void qst_evb_test_reg_wr_plus(void)
 		memset(fail_num, 0, sizeof(fail_num));
 #if defined(QST_EVB_REG_WR_PLUS)
 		evb_setup_timer(TIM3, NULL, 8, DISABLE);
-		t_mag.sel_odr++;
-		while(t_mag.sel_odr < t_mag.set.odr_num)
+		//t_mag.sel_odr++;
+		while(++t_mag.sel_odr < t_mag.set.odr_num)
 		{
 			int flag = 0;
 			if((t_mag.set.odr == qmc6309_odr)||(t_mag.set.odr == qmc6309v_odr))
@@ -3005,7 +3005,7 @@ static void qst_evb_mag_current_test(void)
 					t_mag.sel_osr2 = d;
 					qst_evb_mag_enable();
 					t_mag.data_i = 0;
-					t_mag.data_max = t_mag.set.odr[b].freq*CURRENT_TEST_ONE_DUR;
+					t_mag.data_max = (1500/t_mag.delay)+1;	//t_mag.set.odr[b].freq*CURRENT_TEST_ONE_DUR;
 
 					qst_logi("******current test-%d	[%s]******\r\n", ++t_mag.config_id, g_config_info);
 					while(t_mag.data_i++ <= t_mag.data_max)
@@ -5396,6 +5396,12 @@ void qst_mag_entry_sel_set_reset(void)
 				qst_logi("[%d]: set off\r\n",		0);
 				qst_logi("[%d]: set on\r\n",		1);
 			}
+			else if(items == 3)
+			{
+				qst_logi("[%d]: set/reset off\r\n",		0);
+				qst_logi("[%d]: set on\r\n",			1);
+				qst_logi("[%d]: reset on\r\n",			2);
+			}
 			else
 			{
 				qst_logi("[%d]: set/reset on\r\n",		0);
@@ -6074,7 +6080,7 @@ void qst_evb_mag_test_entry(int interface)
 			case TEST_SOFT_RESET:
 			case TEST_OTP:
 				t_mag.sel_odr = 0;
-				t_mag.sel_sr = 0;
+				//t_mag.sel_sr = 0;
 				qst_mag_auto_sel_range_osr(t_mag.sel_odr);
 			#if !defined(FPGA)
 				qst_mag_entry_set_counter();
@@ -6082,7 +6088,7 @@ void qst_evb_mag_test_entry(int interface)
 				break;
 			case TEST_FACTORY:
 				t_mag.sel_odr = 0;
-				t_mag.sel_sr = 0;
+				//t_mag.sel_sr = 0;
 				qst_mag_auto_sel_range_osr(t_mag.sel_odr);
 				break;
 #if defined(MAG_TEST_I3C_SUPPORT)
@@ -6093,7 +6099,7 @@ void qst_evb_mag_test_entry(int interface)
 				t_mag.sel_osr1 = 0;
 				t_mag.sel_osr2 = 0;
 				t_mag.sel_zdbl = 1;
-				t_mag.sel_sr = 0;
+				//t_mag.sel_sr = 0;
 				break;
 #endif
 #if defined(FPGA)
@@ -6106,12 +6112,12 @@ void qst_evb_mag_test_entry(int interface)
 				t_mag.sel_osr1 = 0;
 				t_mag.sel_osr2 = 0;
 				t_mag.sel_zdbl = 1;
-				t_mag.sel_sr = 0;
+				//t_mag.sel_sr = 0;
 				break;
 #endif
 			default:
 				t_mag.sel_odr = 0;
-				t_mag.sel_sr = 0;
+				//t_mag.sel_sr = 0;
 				qst_mag_auto_sel_range_osr(t_mag.sel_odr);
 				break;
 			}
@@ -6120,7 +6126,7 @@ void qst_evb_mag_test_entry(int interface)
 		{
 			t_mag.sel_range = 0;
 			t_mag.sel_odr = 0;
-			t_mag.sel_sr = 0;
+			//t_mag.sel_sr = 0;
 			t_mag.sel_osr1 = 0;
 			t_mag.sel_osr2 = 0;
 		}

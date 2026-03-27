@@ -101,11 +101,13 @@ int qmc6g00x_get_chipid(void)
 	}
 	if((chip_id == QMC6G00V_CHIP_ID)||(chip_id == QMC6G00H_CHIP_ID))
 	{
+		gTmr.chipid = chip_id;
 		QMC6G00X_LOG("qmc6g00x_get_chipid-ok slave:0x%x chipid = 0x%x\r\n", gTmr.slave_addr, chip_id);
 		return 1;
 	}
 	else
 	{
+		gTmr.chipid = 0;
 		QMC6G00X_LOG("qmc6g00x_get_chipid-fail slave:0x%x chip_id = 0x%x\r\n", gTmr.slave_addr, chip_id);
 		return 0;
 	}
@@ -199,7 +201,7 @@ int qmc6g00x_enable(void)
 {
 	int ret = 0;
 
-	qmc6g00x_do_set(50);
+//	qmc6g00x_do_set(50);
 	ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_ONE, 0x00);
 	qmc6g00x_delay(1);
 	QMC6G00X_CHECK_ERR(ret);
@@ -502,17 +504,21 @@ void qmc6g00x_setrst_auto_mode(short hw_d[3])
 	int ret = QMC6G00X_FAIL;
 
 	if(gTmr.set_ctl.mode == 0)
-	{// set reset on
+	{
 		if((QMC6G00X_ABS(hw_d[0]) > 8000)||(QMC6G00X_ABS(hw_d[1]) > 8000))
 		{
 			gTmr.set_ctl.count++;
 			if(gTmr.set_ctl.count >= 10)
 			{
+				qmc6g00x_ctrlb ctrlb;
 				gTmr.set_ctl.mode = 1;
 				gTmr.set_ctl.count = 0;
 
+				ctrlb.value = gTmr.ctl2_val;
 				ctrlb.bit.set_rst = QMC6G00X_SET_ON;
+				ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_ONE, 0x00);
 				ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_TWO, ctrlb.value);
+				ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_ONE, gTmr.ctl1_val);
 				QMC6G00X_CHECK_ERR(ret);
 				qmc6g00x_delay(1);
 			}
@@ -523,7 +529,7 @@ void qmc6g00x_setrst_auto_mode(short hw_d[3])
 		}
 	}
 	else
-	{// set only
+	{
 		int force_switch = 0;
 		gTmr.set_ctl.count++;
 		if(gTmr.set_ctl.count >= 100)
@@ -533,11 +539,15 @@ void qmc6g00x_setrst_auto_mode(short hw_d[3])
 		}
 		if(((QMC6G00X_ABS(hw_d[0]) < 6000)&&(QMC6G00X_ABS(hw_d[1]) < 6000)) || force_switch)
 		{
+			qmc6g00x_ctrlb ctrlb;
 			gTmr.set_ctl.mode = 0;
 			gTmr.set_ctl.count = 0;
 
-			ctrlb.bit.set_rst = QMC6G00X_SET_RESET_ON;
+			ctrlb.value = gTmr.ctl2_val;
+			ctrlb.bit.set_rst = QMC6G00X_RESET_ON;
+			ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_ONE, 0x00);
 			ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_TWO, ctrlb.value);
+			ret = qmc6g00x_write_reg(QMC6G00X_CTL_REG_ONE, gTmr.ctl1_val);
 			QMC6G00X_CHECK_ERR(ret);
 			qmc6g00x_delay(1);
 		}
@@ -625,11 +635,10 @@ int qmc6g00x_init(int protocol)
 	if(ret)
 	{
 		qmc6g00x_soft_reset();
-		//qmc6g00x_dump_reg();
-		//qmc6g00x_calc_kxky();
 		qmc6g00x_init_para(QMC6G00X_MODE_HPFM, QMC6G00X_ODR_HPF);		//qmc6g00x_init_para(QMC6G00X_MODE_NORMAL, QMC6G00X_ODR_400HZ);
 		ret = qmc6g00x_enable();
 		QMC6G00X_CHECK_ERR(ret);
+		//qmc6g00x_dump_reg();
 
 		return 1;
 	}

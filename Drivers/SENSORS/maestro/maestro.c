@@ -154,31 +154,30 @@ void maestro_do_set(void)
 	{
 		ctrl2.bit.odr = MAESTRO_ODR_1000HZ;
 	}
-	// do set
-	maestro_write_reg(MAESTRO_CTL_REG_ONE, 0x00);
-	maestro_delay(1);
-	ctrl2.bit.set_rst = MAESTRO_SET_ON;
-	MAESTRO_LOG("maestro do set write 0x0a=0x%02x 0x0b=0x%02x\r\n", ctrl1.value, ctrl2.value);
-	maestro_write_reg(MAESTRO_CTL_REG_TWO, ctrl2.value);
-	maestro_delay(1);
-	maestro_write_reg(MAESTRO_CTL_REG_ONE, ctrl1.value);
-	maestro_delay(50);
-#if 0
-	// do reset
-	maestro_write_reg(MAESTRO_CTL_REG_ONE, 0x00);
-	maestro_delay(1);
-	ctrl2.bit.set_rst = MAESTRO_RESET_ON;
-	MAESTRO_LOG("maestro do reset write 0x0a=0x%02x 0x0b=0x%02x\r\n", ctrl1.value, ctrl2.value);
-	maestro_write_reg(MAESTRO_CTL_REG_TWO, ctrl2.value);
-	maestro_delay(1);
-	maestro_write_reg(MAESTRO_CTL_REG_ONE, ctrl1.value);
-	maestro_delay(50);
+	for(int i=0; i<t_mag.set_reset_num; i++)
+	{
+		// do set
+		maestro_write_reg(MAESTRO_CTL_REG_ONE, 0x00);
+		maestro_delay(1);
+		ctrl2.bit.set_rst = MAESTRO_SET_ON;
+		MAESTRO_LOG("maestro do set write 0x0a=0x%02x 0x0b=0x%02x\r\n", ctrl1.value, ctrl2.value);
+		maestro_write_reg(MAESTRO_CTL_REG_TWO, ctrl2.value);
+		maestro_write_reg(MAESTRO_CTL_REG_ONE, ctrl1.value);
+		maestro_delay(2);
+#if 1// do reset
+		maestro_write_reg(MAESTRO_CTL_REG_ONE, 0x00);
+		maestro_delay(1);
+		ctrl2.bit.set_rst = MAESTRO_RESET_ON;
+		MAESTRO_LOG("maestro do reset write 0x0a=0x%02x 0x0b=0x%02x\r\n", ctrl1.value, ctrl2.value);
+		maestro_write_reg(MAESTRO_CTL_REG_TWO, ctrl2.value);
+		maestro_write_reg(MAESTRO_CTL_REG_ONE, ctrl1.value);
+		maestro_delay(2);
 #endif
-
+	}
 	maestro_write_reg(MAESTRO_CTL_REG_ONE, 0x00);
-	maestro_delay(5);
 }
 
+#if defined(MAESTRO_KXKY)
 void maestro_calc_kxky(unsigned char *preg)
 {
 #if 1
@@ -219,7 +218,7 @@ void maestro_calc_kxky(unsigned char *preg)
 	
 	MAESTRO_LOG("maestro_calc_kxky [%f %f]  \r\n", tmr.kx, tmr.ky);
 }
-
+#endif
 
 int maestro_enable(void)
 {
@@ -230,10 +229,10 @@ int maestro_enable(void)
 	maestro_delay(1);
 	MAESTRO_CHECK_ERR(ret);
 
+#if defined(MAESTRO_KXKY)
 	ret = maestro_read_reg(0x4e, reg, 2);
 	maestro_calc_kxky(reg);
-//	tmr.ctrla.value = 0x15;
-//	tmr.ctrlb.value = 0x41;
+#endif
 	MAESTRO_LOG("maestro_enable! 0x0a=0x%02x 0x0b=0x%02x\r\n", tmr.ctrla.value, tmr.ctrlb.value);
 	ret = maestro_write_reg(MAESTRO_CTL_REG_TWO, tmr.ctrlb.value);
 	MAESTRO_CHECK_ERR(ret);
@@ -282,51 +281,26 @@ void maestro_enable_ibi(maestro_fifo_ibi flag)
 
 void maestro_init_para(unsigned char mode, unsigned char odr)
 {
-#if 0
-	tmr.ctrla.bit.mode = mode;
-	if(mode == MAESTRO_MODE_HPFM)
-	{
-		tmr.ctrla.bit.osr1 = MAESTRO_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_8;
-	}
-	else if(odr == MAESTRO0_ODR_200HZ)
-	{
-		tmr.ctrla.bit.osr1 = MAESTRO_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_8;
-	}
-	else
-	{
-		tmr.ctrla.bit.osr1 = MAESTRO_OSR1_4;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_2;
-	}
-	tmr.ctrla.bit.zdbl_enb = MAESTRO_ZDBL_ENB_ON;
-
-	tmr.ctrlb.bit.set_rst = 0;
-	tmr.ctrlb.bit.range = MAESTRO_RNG_32G;
-	tmr.ctrlb.bit.odr = odr;
-	tmr.ctrlb.bit.soft_rst = 0;
-#endif
-
 	tmr.ctrla.bit.mode = mode;
 	if(mode == MAESTRO_MODE_HPFM)
 	{
 		tmr.ctrla.bit.osr1 = MAESTRO1V_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_1;
+		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_2;
 	}
 	else if(odr == MAESTRO_ODR_1000HZ)
 	{
 		tmr.ctrla.bit.osr1 = MAESTRO1V_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_1;
+		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_2;
 	}
 	else if(odr == MAESTRO_ODR_400HZ)
 	{
 		tmr.ctrla.bit.osr1 = MAESTRO1V_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_1;
+		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_2;
 	}
 	else if(odr == MAESTRO_ODR_200HZ)
 	{
 		tmr.ctrla.bit.osr1 = MAESTRO1V_OSR1_8;
-		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_1;
+		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_2;
 	}
 	else
 	{
@@ -334,7 +308,7 @@ void maestro_init_para(unsigned char mode, unsigned char odr)
 		tmr.ctrla.bit.osr2 = MAESTRO_OSR2_1;
 	}
 
-	tmr.ctrlb.bit.set_rst = MAESTRO_SET_RESET_OFF;
+	tmr.ctrlb.bit.set_rst = MAESTRO_RESET_ON;
 	tmr.ctrlb.bit.range = MAESTRO1V_RNG_20G;
 	tmr.ctrlb.bit.odr = odr;
 	tmr.ctrlb.bit.soft_rst = 0;
@@ -346,7 +320,7 @@ void maestro_init_para(unsigned char mode, unsigned char odr)
 #endif
 }
 
-
+#if 0
 void maestro_reload_otp(void)
 {
 	int ret = 0;
@@ -414,6 +388,7 @@ void maestro_check_otp(void)
 		}
 	}
 }
+#endif
 
 void maestro_soft_reset(void)
 {
@@ -438,7 +413,7 @@ void maestro_soft_reset(void)
 		}
 		maestro_delay(1);
 	}
-#if defined(MAESTRO_DIS_IO_AUTO)
+#if 0
 	status = 0x00;
 	ret = maestro_read_reg(0x40, &status, 1);
 	MAESTRO_CHECK_ERR(ret);
@@ -527,7 +502,9 @@ int maestro_read_mag_xyz(float *ut)
 		ut[0] = (float)((float)raw[0] / ((float)tmr.ssvt/100.f));		// ut
 		ut[1] = (float)((float)raw[1] / ((float)tmr.ssvt/100.f));		// ut
 		ut[2] = (float)((float)raw[2] / ((float)tmr.ssvt/100.f));		// ut
+#if defined(MAESTRO_KXKY)
 		ut[2] = ut[2] - (tmr.kx*ut[0]) - (tmr.ky*ut[1]);
+#endif
 	}
 	else
 	{
@@ -712,7 +689,6 @@ int maestro_recover(void)
 		{
 			MAESTRO_LOG("maestro_recover slave=0x%02x read id OK\r\n", tmr.slave_addr);
 			maestro_soft_reset();	// softreset reload OTP
-			//maestro_reload_otp();	// reload otp
 			tmr.slave_addr = MAESTRO_IIC_ADDR;
 			ret = maestro_get_chipid();
 			if(ret)
@@ -748,7 +724,6 @@ int maestro_init(int protocol)
 	if(ret)
 	{
 		maestro_soft_reset();
-		//maestro_reload_otp();	// reload otp
 		maestro_init_para(MAESTRO_MODE_HPFM, MAESTRO_ODR_HPF);
 		//maestro_init_para(MAESTRO_MODE_NORMAL, MAESTRO_ODR_400HZ);
 		maestro_do_set();
